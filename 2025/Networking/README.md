@@ -1,6 +1,6 @@
 # Networking 
 
-# 1. Understand OSI & TCP/IP Models
+# Understand OSI & TCP/IP Models
 
 # Purpose of OSI Model
 
