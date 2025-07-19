@@ -244,42 +244,87 @@ sudo systemctl restart sshd
 ### ✅ **Verify**
 
 ssh baduser@your_server_ip
-======================================================================================
+    
+### Here is a **well-structured documentation** in Markdown format that documents how to **create a user and restrict SSH access to specific users** on an Amazon Linux 2023 EC2 instance.
 
-### Example of **Restrict SSH Access to Specific Users**
+# 🔒 Restrict SSH Access to Specific Users on Amazon Linux (EC2)
 
-[root@Test ~]# useradd user1
-[root@Test ~]# mkdir -p /home/user1/.ssh
-[root@Test ~]# cp /home/ec2-user/.ssh/authorized_keys /home/user1/.ssh/
-[root@Test ~]# chown -R zaki:zaki /home/user1/.ssh
-[root@Test ~]# chmod 700 /home/user1/.ssh
-[root@Test ~]# chmod 600 /home/user1/.ssh/authorized_keys
-[root@Test ~]# ls
-[root@Test ~]# pwd
-/root
-[root@Test ~]# cd /home/
-[root@Test home]# ls
-abrar  ec2-user  user1  zaki
-[root@Test home]# sudo usermod -aG wheel user1
-[root@Test /]# passwd user1
-Changing password for user user1.
-New password:
-BAD PASSWORD: The password contains the user name in some form
-Retype new password:
-passwd: all authentication tokens updated successfully.
-[root@Test /]# vi /etc/ssh/sshd_config
-[root@Test /]# sudo systemctl restart sshd
-[root@Test zaki]# cat ~/.ssh/authorized_keys
-no-port-forwarding,no-agent-forwarding,no-X11-forwarding,command="echo 'Please login as the user \"ec2-user\" rather than the user \"root\".';echo;sleep 10;exit 142" ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCpEGvF3pke8Ui5BdVzS8L7E4fNDOi95iPq4Xpn/uKKhEhRA/jQ2EPcdHtE3EPBt6te5jD3mW6APHXUSeUUr06KY3JgWC1YT08NDqhj4irYB2JWIstIxsmjDqnYL4dgz6sXXkuOrQ/2GMnHu3Ab4l4OFCyE3XWnLTbHYnoR6qPW9mD2fMqXm8aW4f/1ZlXN6ZJSthKW662aXg2BSB2wlo4PMgS2LiEBlf6bFeiwCcexTpJCbmFVHPHtKWwVH5fF7pHsEF5x49oqRK6qb1eb9dNsGQtDnb8mXY9ic8i17f7+i3+0KP4mflCHnzByAEvCwsYxqJrMVoSb+IwhMtAeF8IB MC 1 Key
-[root@Test zaki]# cat ~/.ssh/id_rsa.pub
-ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCnGVM62v+KlUOaHic1DT7di4WnXEvp4WrbJz8soWjJrobo4tL8GVPgL8qIkxs93EhjRYazTtdF4UjiVbrSEIf8D34WEh/RlWTtxFEeISDU0nXhd82YyI4M6b0cwSlvrl9rohVQm2RCpuHDWEQz6Yt5/DVfb3CrE/uegLSbN3F06FZA1F3MwIhENTNetHKdLs2QRYbaNgFUqR+tXkvN1qE0gtjOlGqR3KYHGwAI8IOBXFSj5EWef3wFcoZ6eBF06TaN091WqJM+AfNNTj7hD9rZELMISg27R3JPrDiIi3If7EpE2SGqJRkzRGrCWOvu8G9yKyfeb6B4NEIUzHcKovdpdPf3QcIQhMpAvhEX/m8d1mo3qtkU8nIZlvM+rZuSDsP7Lj1H3nd76GJQ9vhH6wTpIGlhJzG4euoDfUcBWta8Ze7113ZnG+6X/5hrnFZ3Wbf40yvT0FUKePfzNoMSohnH+SiVUOxXWgLHiQ9UoldALvLa7eGARwVo/UkZcNhdrw8= root@Test
-[root@Test zaki]# su - user1
-Last login: Fri Jul 18 20:56:53 UTC 2025 on pts/1
-[user1@Test ~]$ sudo vi .ssh/authorized_keys
-[user1@Test ~]$ sudo systemctl restart sshd
-[user1@Test ~]$ exit
-logout
-[root@Test zaki]# ssh user1@65.1.130.219
+This guide documents the procedure to:
+- Create a new user (`user1`)
+- Configure SSH key-based access
+- Grant sudo privileges
+- Restrict SSH access to only specific users
+---
+## 🧱 Prerequisites
+
+- EC2 instance running **Amazon Linux 2023**
+- SSH access to the instance as `ec2-user` or a user with `sudo` privileges
+- A public SSH key already available (e.g., from `~/.ssh/id_rsa.pub`)
+---
+
+## 👤 Step 1: Create a New User
+
+```bash
+sudo useradd user1
+````
+---
+## 📁 Step 2: Set Up `.ssh` Directory for the New User
+
+```bash
+sudo mkdir -p /home/user1/.ssh
+sudo cp /home/ec2-user/.ssh/authorized_keys /home/user1/.ssh/
+sudo chown -R user1:user1 /home/user1/.ssh
+sudo chmod 700 /home/user1/.ssh
+sudo chmod 600 /home/user1/.ssh/authorized_keys
+```
+---
+## 🔑 Step 3: Grant Sudo Privileges
+
+```bash
+sudo usermod -aG wheel user1
+```
+---
+## 🔐 Step 4: (Optional) Set a Password for `user1`
+
+```bash
+sudo passwd user1
+```
+> ⚠️ Avoid including the username in the password. Use a strong and secure password.
+
+---
+## 🚫 Step 5: Restrict SSH Access to Specific Users
+
+Open the SSH daemon configuration file:
+
+```bash
+sudo vi /etc/ssh/sshd_config
+```
+Add the following line at the end of the file to allow only specific users to SSH:
+
+```conf
+AllowUsers ec2-user user1
+```
+
+> Replace `ec2-user` and `user1` with the usernames you want to allow.
+> This **blocks SSH access for all other users**, including `root`.
+---
+## 🔁 Step 6: Restart SSH Service
+
+```bash
+sudo systemctl restart sshd
+```
+---
+## 🧪 Step 7: Verify SSH Login with New User
+
+Try logging in with `user1` from your local terminal:
+
+```bash
+ssh user1@<your-ec2-public-ip>
+```
+
+If successful, you'll see:
+
+```text
    ,     #_
    ~\_  ####_        Amazon Linux 2023
   ~~  \_#####\
@@ -290,10 +335,58 @@ logout
       ~~._.   _/
          _/ _/
        _/m/'
-Last login: Fri Jul 18 21:01:37 2025
-[user1@Test ~]$ exit
-logout
-====================================================================================      
+```
+---
+## ✅ Summary of What We Did
+
+| Task                                   | Status |
+| -------------------------------------- | ------ |
+| Created `user1`                        | ✅      |
+| Set up SSH key-based login             | ✅      |
+| Configured correct file permissions    | ✅      |
+| Granted sudo access                    | ✅      |
+| Restricted SSH access via `AllowUsers` | ✅      |
+| Tested successful login                | ✅      |
+
+---
+## 📄 SSH Public Key Reference
+Example key used (from `~/.ssh/id_rsa.pub`):
+
+```text
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCnGVM62v+KlUOaHic1DT7di4WnXEvp4WrbJz8soWjJrobo4tL8GVP...
+```
+
+> You can use your own key or generate one using:
+>
+> ```bash
+> ssh-keygen -t rsa -b 4096
+> ```
+
+---
+
+## 🔐 Tip: Remove AWS Default `authorized_keys` Restriction (Optional)
+
+If `/home/ec2-user/.ssh/authorized_keys` contains a line like this:
+
+```text
+no-port-forwarding,no-agent-forwarding,... command="echo 'Please login as ec2-user'..."
+```
+
+You can remove it for full shell access. Edit `~/.ssh/authorized_keys` and remove or replace the restricted line with your actual public key.
+
+---
+
+## 📦 Files Modified
+
+* `/etc/ssh/sshd_config`
+* `/home/user1/.ssh/authorized_keys`
+
+---
+
+**Author:** `YourName`
+**Date:** July 18, 2025
+**Platform:** Amazon Linux 2023 (EC2)
+```
 
 # File & Directory Permissions:
 
@@ -315,12 +408,276 @@ sudo chmod 740 /devops_workspace/project_notes.txt
 # Use ls -l to verify permissions.
 
 
-
 #  Log File Analysis with AWK, Grep & Sed:
+
 ### Logs are crucial in DevOps! You’ll analyze logs using the Linux_2k.log file from LogHub ([GitHub Repo](https://github.com/logpai/loghub/blob/master/Linux/Linux_2k.log).
 
+### Grep: 
 
+To find **all occurrences of the word `error`** in a file using `grep`, use the following command:
 
+---
+
+### ✅ **Basic Command**
+
+```bash
+grep "error" filename.txt
+```
+
+Replace `filename.txt` with your actual file name (e.g., `application.txt`).
+
+---
+
+### 🔍 **Case-insensitive Search**
+
+To match `Error`, `ERROR`, `eRrOr`, etc.:
+
+```bash
+grep -i "error" filename.txt
+```
+
+---
+
+### 📄 **Search in All Files in Current Directory**
+
+```bash
+grep -i "error" *
+```
+
+---
+
+### 📁 **Search Recursively in All Files and Subdirectories**
+
+```bash
+grep -ri "error" .
+```
+
+---
+
+### 📌 Example with Log File:
+
+```bash
+grep -i "error" /var/log/messages
+```
+
+### awk:
+
+To use `awk` to extract **timestamps** and **log levels** from a log file, we first need to assume a **typical log format**. Here's a general example log line:
+
+```
+Jul 18 12:45:02 server-name application-name: [ERROR] Something failed here.
+```
+
+---
+
+### ✅ **AWK Command to Extract Timestamp and Log Level**
+
+```bash
+awk '{print $1, $2, $3, $NF}' filename.txt
+```
+
+* `$1, $2, $3` → `Jul 18 12:45:02` (timestamp)
+* `$NF` → the **last field**, which is often the log level in square brackets like `[ERROR]`
+
+---
+
+### 💡 Better: Extract `[LOGLEVEL]` from anywhere in the line
+
+If the log level (e.g., `[INFO]`, `[ERROR]`, `[WARN]`) is not always the last field, use a **pattern match**:
+
+```bash
+awk '{for(i=1;i<=NF;i++) if($i ~ /^\[[A-Z]+\]$/) print $1, $2, $3, $i}' filename.txt
+```
+
+✔️ This will:
+
+* Loop through each word in the line
+* Print the **timestamp** + **log level** if the log level is in the format `[LEVEL]`
+
+---
+
+### 📌 Example Output:
+
+```
+Jul 18 12:45:02 [ERROR]
+Jul 18 12:47:10 [INFO]
+Jul 18 12:49:33 [WARN]
+```
+### sed:
+
+Here's a **step-by-step guide to `sed` commands** with examples. `sed` (Stream Editor) is used in Linux/Unix to **search**, **replace**, **insert**, and **delete** lines in text files.
+
+---
+
+## 🧱 1. **Basic Syntax**
+
+```bash
+sed [options] 'command' filename
+```
+
+---
+
+## 🔄 2. **Substitute/Replace (`s`)**
+
+### 🔹 Replace first occurrence on each line:
+
+```bash
+sed 's/apple/orange/' fruits.txt
+```
+
+**Explanation:** Replaces the first **"apple"** with **"orange"** on each line.
+
+---
+
+### 🔹 Replace all occurrences:
+
+```bash
+sed 's/apple/orange/g' fruits.txt
+```
+
+**`g`** means global (replace all matches in a line).
+
+---
+
+### 🔹 Replace only on a specific line:
+
+```bash
+sed '2s/apple/orange/' fruits.txt
+```
+
+Replaces **"apple" with "orange"** only on **line 2**.
+
+---
+
+### 🔹 Case-insensitive replace:
+
+```bash
+sed 's/apple/orange/Ig' fruits.txt
+```
+
+**`I`** makes the search case-insensitive (matches `apple`, `Apple`, `APPLE`, etc.)
+
+---
+
+## 🧹 3. **Delete Lines**
+
+### 🔹 Delete a specific line:
+
+```bash
+sed '3d' fruits.txt
+```
+
+Deletes **line 3**.
+
+### 🔹 Delete a range of lines:
+
+```bash
+sed '5,10d' fruits.txt
+```
+
+Deletes lines **5 to 10**.
+
+### 🔹 Delete lines matching a pattern:
+
+```bash
+sed '/error/d' logs.txt
+```
+
+Deletes lines that **contain the word "error"**.
+
+---
+
+## ➕ 4. **Insert Text**
+
+### 🔹 Insert before a specific line:
+
+```bash
+sed '3i\This is a new line' file.txt
+```
+
+Inserts **a new line before line 3**.
+
+---
+
+## ➕ 5. **Append Text**
+
+### 🔹 Append after a specific line:
+
+```bash
+sed '3a\This is added after line 3' file.txt
+```
+
+---
+
+## ✏️ 6. **Change/Replace Entire Line**
+
+### 🔹 Change content of a specific line:
+
+```bash
+sed '2c\Replaced entire line 2' file.txt
+```
+
+---
+
+## 🔁 7. **In-place Editing (Modify File Directly)**
+
+> ⚠️ Use with caution!
+
+```bash
+sed -i 's/old/new/g' file.txt
+```
+
+**`-i`** edits the file directly without showing output.
+
+---
+
+## 📁 8. **Multiple Commands**
+
+### 🔹 Execute multiple commands:
+
+```bash
+sed -e 's/apple/orange/g' -e '/banana/d' fruits.txt
+```
+
+Replaces **apple → orange** and deletes lines with **banana**.
+
+---
+
+## 🔍 9. **Print Matching Lines (Filter)**
+
+```bash
+sed -n '/error/p' logs.txt
+```
+
+**`-n`** suppresses default output; `p` prints only matching lines.
+
+---
+
+## 🔐 10. **Replace IP Addresses (Security Use Case)**
+
+```bash
+sed -E 's/([0-9]{1,3}\.){3}[0-9]{1,3}/[REDACTED]/g' logs.txt
+```
+
+Replaces all **IPv4 addresses** with `[REDACTED]`.
+
+---
+
+## 📌 Summary Table
+
+| Task                 | Command Example                  |
+| -------------------- | -------------------------------- |
+| Replace text         | `sed 's/foo/bar/' file.txt`      |
+| Global replace       | `sed 's/foo/bar/g' file.txt`     |
+| Delete line          | `sed '5d' file.txt`              |
+| Delete pattern match | `sed '/error/d' logs.txt`        |
+| Insert before line   | `sed '2i\Hello' file.txt`        |
+| Append after line    | `sed '2a\Hello' file.txt`        |
+| Replace full line    | `sed '2c\New content' file.txt`  |
+| In-place edit        | `sed -i 's/yes/no/g' config.txt` |
+| Print match only     | `sed -n '/fail/p' logs.txt`      |
+
+---
 
 
 
