@@ -247,7 +247,7 @@ ssh baduser@your_server_ip
 ======================================================================================
 
 ### Example of **Restrict SSH Access to Specific Users**
----
+
 [root@Test ~]# useradd user1
 [root@Test ~]# mkdir -p /home/user1/.ssh
 [root@Test ~]# cp /home/ec2-user/.ssh/authorized_keys /home/user1/.ssh/
@@ -293,8 +293,7 @@ logout
 Last login: Fri Jul 18 21:01:37 2025
 [user1@Test ~]$ exit
 logout
-
----
+====================================================================================      
 
 # File & Directory Permissions:
 
