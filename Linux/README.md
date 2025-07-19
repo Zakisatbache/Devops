@@ -679,8 +679,19 @@ Replaces all **IPv4 addresses** with `[REDACTED]`.
 
 ---
 
+# Volume Management & Disk Usage:
+Task:
+Create a directory /mnt/devops_data.
+Mount a new volume (or loop device for local practice).
+Verify using df -h and mount | grep devops_data.
 
+# Process Management & Monitoring:
+Task:
+Start a background process (ping google.com > ping_test.log &).
+Use ps, top, and htop to monitor it.
+Kill the process and verify it's gone.
 
+###### End ######
 
 
 
