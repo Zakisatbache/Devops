@@ -222,6 +222,113 @@ It should deny access with a message like:
 ```
 Permission denied, please try again.
 ```
+======================================================================================
+### If you get error: Permission denied (publickey,gssapi-keyex,gssapi-with-mic)
+
+mkdir -p /home/zaki/.ssh
+cp /tmp/zaki-key.pub /home/zaki/.ssh/authorized_keys
+chown -R zaki:zaki /home/zaki/.ssh
+chmod 700 /home/zaki/.ssh
+chmod 600 /home/zaki/.ssh/authorized_keys
+sudo vi /etc/ssh/sshd_config
+
+AllowUsers user1
+:wq (save and exit)
+
+AllowGroups sshusers
+
+DenyGroups blockedgroup
+
+sudo systemctl restart sshd
+
+### ✅ **Verify**
+
+ssh baduser@your_server_ip
+======================================================================================
+
+### Example of **Restrict SSH Access to Specific Users**
+---
+[root@Test ~]# useradd user1
+[root@Test ~]# mkdir -p /home/user1/.ssh
+[root@Test ~]# cp /home/ec2-user/.ssh/authorized_keys /home/user1/.ssh/
+[root@Test ~]# chown -R zaki:zaki /home/user1/.ssh
+[root@Test ~]# chmod 700 /home/user1/.ssh
+[root@Test ~]# chmod 600 /home/user1/.ssh/authorized_keys
+[root@Test ~]# ls
+[root@Test ~]# pwd
+/root
+[root@Test ~]# cd /home/
+[root@Test home]# ls
+abrar  ec2-user  user1  zaki
+[root@Test home]# sudo usermod -aG wheel user1
+[root@Test /]# passwd user1
+Changing password for user user1.
+New password:
+BAD PASSWORD: The password contains the user name in some form
+Retype new password:
+passwd: all authentication tokens updated successfully.
+[root@Test /]# vi /etc/ssh/sshd_config
+[root@Test /]# sudo systemctl restart sshd
+[root@Test zaki]# cat ~/.ssh/authorized_keys
+no-port-forwarding,no-agent-forwarding,no-X11-forwarding,command="echo 'Please login as the user \"ec2-user\" rather than the user \"root\".';echo;sleep 10;exit 142" ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCpEGvF3pke8Ui5BdVzS8L7E4fNDOi95iPq4Xpn/uKKhEhRA/jQ2EPcdHtE3EPBt6te5jD3mW6APHXUSeUUr06KY3JgWC1YT08NDqhj4irYB2JWIstIxsmjDqnYL4dgz6sXXkuOrQ/2GMnHu3Ab4l4OFCyE3XWnLTbHYnoR6qPW9mD2fMqXm8aW4f/1ZlXN6ZJSthKW662aXg2BSB2wlo4PMgS2LiEBlf6bFeiwCcexTpJCbmFVHPHtKWwVH5fF7pHsEF5x49oqRK6qb1eb9dNsGQtDnb8mXY9ic8i17f7+i3+0KP4mflCHnzByAEvCwsYxqJrMVoSb+IwhMtAeF8IB MC 1 Key
+[root@Test zaki]# cat ~/.ssh/id_rsa.pub
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCnGVM62v+KlUOaHic1DT7di4WnXEvp4WrbJz8soWjJrobo4tL8GVPgL8qIkxs93EhjRYazTtdF4UjiVbrSEIf8D34WEh/RlWTtxFEeISDU0nXhd82YyI4M6b0cwSlvrl9rohVQm2RCpuHDWEQz6Yt5/DVfb3CrE/uegLSbN3F06FZA1F3MwIhENTNetHKdLs2QRYbaNgFUqR+tXkvN1qE0gtjOlGqR3KYHGwAI8IOBXFSj5EWef3wFcoZ6eBF06TaN091WqJM+AfNNTj7hD9rZELMISg27R3JPrDiIi3If7EpE2SGqJRkzRGrCWOvu8G9yKyfeb6B4NEIUzHcKovdpdPf3QcIQhMpAvhEX/m8d1mo3qtkU8nIZlvM+rZuSDsP7Lj1H3nd76GJQ9vhH6wTpIGlhJzG4euoDfUcBWta8Ze7113ZnG+6X/5hrnFZ3Wbf40yvT0FUKePfzNoMSohnH+SiVUOxXWgLHiQ9UoldALvLa7eGARwVo/UkZcNhdrw8= root@Test
+[root@Test zaki]# su - user1
+Last login: Fri Jul 18 20:56:53 UTC 2025 on pts/1
+[user1@Test ~]$ sudo vi .ssh/authorized_keys
+[user1@Test ~]$ sudo systemctl restart sshd
+[user1@Test ~]$ exit
+logout
+[root@Test zaki]# ssh user1@65.1.130.219
+   ,     #_
+   ~\_  ####_        Amazon Linux 2023
+  ~~  \_#####\
+  ~~     \###|
+  ~~       \#/ ___   https://aws.amazon.com/linux/amazon-linux-2023
+   ~~       V~' '->
+    ~~~         /
+      ~~._.   _/
+         _/ _/
+       _/m/'
+Last login: Fri Jul 18 21:01:37 2025
+[user1@Test ~]$ exit
+logout
+
+---
+
+# File & Directory Permissions:
+
+### Create /devops_workspace and a file project_notes.txt.
+
+# Step 1: Create the directory
+sudo mkdir /devops_workspace
+
+# Step 2: Create the file inside the directory
+sudo touch /devops_workspace/project_notes.txt
+
+# Step 3: Set ownership to current user (optional, replace 'your_username' if needed)
+sudo chown $USER:$USER /devops_workspace /devops_workspace/project_notes.txt
+
+# Step 4: Set permissions
+# Owner: read/write (rw-), Group: read-only (r--), Others: no access (---)
+sudo chmod 740 /devops_workspace/project_notes.txt
+
+# Use ls -l to verify permissions.
+
+
+
+#  Log File Analysis with AWK, Grep & Sed:
+### Logs are crucial in DevOps! You’ll analyze logs using the Linux_2k.log file from LogHub ([GitHub Repo](https://github.com/logpai/loghub/blob/master/Linux/Linux_2k.log).
+
+
+
+
+
+
+
+
+
+
 
 
 
